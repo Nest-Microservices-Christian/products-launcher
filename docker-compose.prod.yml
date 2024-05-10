@@ -1,0 +1,94 @@
+version: '3.4'
+
+services:
+  nats-server:
+    image: nats:latest
+    ports:
+      - 8222:8222
+  client-gateway:
+    container_name: client-gateway
+    build:
+      context: ./client-gateway
+      dockerfile: dockerfile.prod
+    image: client-gateway-prod
+    ports:
+      - ${CLIENT_GATEWAY_PORT}:${CLIENT_GATEWAY_PORT}
+    environment:
+      - PORT=${CLIENT_GATEWAY_PORT}
+      - NATS_SERVERS=nats://nats-server:4222
+  auth-ms:
+    container_name: auth-ms
+    build:
+      context: ./auth-ms
+      dockerfile: dockerfile.prod
+    image: auth-ms-prod
+    environment:
+      - PORT=3000
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=${AUTH_DATABASE_URL}
+      - JWT_SECRET=${AUTH_JWT_SECRET}
+  products-ms:
+    container_name: products-ms
+    build:
+      context: ./products-ms
+      dockerfile: dockerfile.prod
+    image: products-ms-prod
+    environment:
+      - PORT=3000
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=file:./dev.db
+  payments-ms:
+    container_name: payments-ms
+    build: 
+      context: ./payments-ms
+      dockerfile: dockerfile.prod
+    ports:
+      - ${PAYMENTS_MS_PORT}:${PAYMENTS_MS_PORT}
+    environment:
+      - PORT=${PAYMENTS_MS_PORT}
+      - NATS_SERVERS=nats://nats-server:4222
+      - STRIPE_SECRET_KEY=${PAYMENTS_STRIPE_SECRET_KEY}
+      - STRIPE_SUCCESS_URL=${PAYMENTS_STRIPE_SUCCESS_URL}
+      - STRIPE_CANCEL_URL=${PAYMENTS_STRIPE_CANCEL_URL}
+      - STRIPE_ENDPOINT_SECRET=${PAYMENTS_STRIPE_ENDPOINT_SECRET}
+  # orders-db:
+  #   container_name: orders_database
+  #   image: postgres:16.2
+  #   restart: always
+  #   volumes:
+  #     - ./orders-ms/postgres:/var/lib/postgresql/data
+  #   ports:
+  #     - 5432:5432
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: ordersdb
+  # orders-ms:
+  #   container_name: orders-ms
+  #   build: ./orders-ms
+  #   ports:
+  #     - 3002:3002
+  #   volumes:
+  #     - ./orders-ms/src:/usr/src/app/src
+  #   command: npm run start:dev
+  #   environment:
+  #     - PORT=3002
+  #     - NATS_SERVERS=nats://nats-server:4222
+  #     - DATABASE_URL=postgres://postgres:postgres@orders-db:5432/ordersdb
+  #   depends_on:
+  #     - orders-db 
+  # payments-ms:
+  #   container_name: payments-ms
+  #   build: ./payments-ms
+  #   ports:
+  #     - ${PAYMENTS_MS_PORT}:${PAYMENTS_MS_PORT}
+  #   volumes:
+  #     - ./payments-ms/src:/usr/src/app/src
+  #   command: npm run start:dev
+  #   environment:
+  #     - PORT=${PAYMENTS_MS_PORT}
+  #     - NATS_SERVERS=nats://nats-server:4222
+  #     - STRIPE_SECRET_KEY=${PAYMENTS_STRIPE_SECRET_KEY}
+  #     - STRIPE_SUCCESS_URL=${PAYMENTS_STRIPE_SUCCESS_URL}
+  #     - STRIPE_CANCEL_URL=${PAYMENTS_STRIPE_CANCEL_URL}
+  #     - STRIPE_ENDPOINT_SECRET=${PAYMENTS_STRIPE_ENDPOINT_SECRET}
