@@ -18,7 +18,17 @@ spec:
         app: orders-ms
     spec:
       containers:
-      - image: us-east1-docker.pkg.dev/microservices-423218/image-registry/orders-ms
-        name: orders-ms
-        resources: {}
+        - image: us-east1-docker.pkg.dev/microservices-423218/image-registry/orders-ms
+          name: orders-ms
+          env:
+            - name: PORT
+              value: "3000"
+            - name: NATS_SERVERS
+              value: "nats://nats"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: orders-secrets
+                  key: database_url
+          resources: {}
 status: {}
