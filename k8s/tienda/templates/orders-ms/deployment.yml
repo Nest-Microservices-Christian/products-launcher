@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: orders-ms
+  name: orders-ms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders-ms
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: orders-ms
+    spec:
+      containers:
+      - image: us-east1-docker.pkg.dev/microservices-423218/image-registry/orders-ms
+        name: orders-ms
+        resources: {}
+status: {}
