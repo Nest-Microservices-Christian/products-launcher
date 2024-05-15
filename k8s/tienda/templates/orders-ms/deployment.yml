@@ -30,5 +30,11 @@ spec:
                 secretKeyRef:
                   name: orders-secrets
                   key: database_url
-          resources: {}
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "250m"
 status: {}
